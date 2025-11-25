@@ -65,6 +65,7 @@ class Message < ApplicationRecord
   before_validation :ensure_content_type
   before_validation :prevent_message_flooding
   before_save :ensure_processed_message_content
+  before_save :prepend_agent_name_to_content
   before_save :ensure_in_reply_to
 
   validates :account_id, presence: true
@@ -274,6 +275,20 @@ class Message < ApplicationRecord
 
     message_content = text_content_quoted || html_content_quoted || content
     self.processed_message_content = message_content&.truncate(150_000)
+  end
+
+  def prepend_agent_name_to_content
+    return unless outgoing?
+    return if content.blank?
+    return if sender.blank?
+    return if sender.is_a?(AgentBot)
+    return if content.start_with?("#{agent_display_name}:")
+
+    self.content = "#{agent_display_name}:\n#{content}"
+  end
+
+  def agent_display_name
+    sender.available_name || sender.name
   end
 
   # fetch the in_reply_to message and set the external id
