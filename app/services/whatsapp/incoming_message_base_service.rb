@@ -217,6 +217,7 @@ class Whatsapp::IncomingMessageBaseService
 
     phone_number = "+#{message_phone_number}"
     formatted_phone_number = TelephoneNumber.parse(phone_number).international_number
-    @contact.name == phone_number || @contact.name == formatted_phone_number
+    stored_phone_number_is_name = @contact.phone_number.present? && @contact.name == @contact.phone_number
+    @contact.name == phone_number || @contact.name == formatted_phone_number || stored_phone_number_is_name
   end
 end

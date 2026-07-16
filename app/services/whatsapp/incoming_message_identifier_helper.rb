@@ -77,8 +77,17 @@ module Whatsapp::IncomingMessageIdentifierHelper
     return { name: name } if phone_number.blank?
 
     formatted_phone_number = "+#{phone_number}"
+    normalized_phone_number = Whatsapp::PhoneNumberNormalizationService.new(inbox).normalize_number(phone_number)
+    normalized_phone_number = "+#{normalized_phone_number}"
+
+    contact_phone_number = formatted_phone_number
+    unless normalized_phone_number == formatted_phone_number || inbox.account.contacts.exists?(phone_number: formatted_phone_number) ||
+           TelephoneNumber.parse(formatted_phone_number).valid_types.include?(:fixed_line)
+      contact_phone_number = normalized_phone_number if inbox.account.contacts.exists?(phone_number: normalized_phone_number)
+    end
+
     display_name = name == phone_identifier ? formatted_phone_number : name
-    { name: display_name, phone_number: formatted_phone_number }
+    { name: display_name, phone_number: contact_phone_number }
   end
 
   def update_whatsapp_identifiers(source_ids: [], username: nil, phone_number: nil)
