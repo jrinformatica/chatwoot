@@ -3,26 +3,35 @@ import { ref } from 'vue';
 export const useLoadWithRetry = (config = {}) => {
   const maxRetry = config.max_retry || 3;
   const backoff = config.backoff || 1000;
+  const mediaType = config.mediaType || 'image';
 
   const isLoaded = ref(false);
   const hasError = ref(false);
+  const loadedUrl = ref('');
 
   const loadWithRetry = async url => {
     const attemptLoad = () => {
       return new Promise((resolve, reject) => {
-        const img = new Image();
+        const cacheBustedUrl = new URL(url, window.location.origin);
+        cacheBustedUrl.searchParams.set('t', Date.now());
 
-        img.onload = () => {
+        const onSuccess = () => {
           isLoaded.value = true;
           hasError.value = false;
+          loadedUrl.value = cacheBustedUrl.toString();
           resolve();
         };
 
-        img.onerror = () => {
-          reject(new Error('Failed to load image'));
-        };
+        const element = mediaType === 'audio' ? new Audio() : new Image();
+        if (mediaType === 'audio') {
+          element.preload = 'metadata';
+          element.onloadedmetadata = onSuccess;
+        } else {
+          element.onload = onSuccess;
+        }
 
-        img.src = url;
+        element.onerror = () => reject(new Error('Failed to load resource'));
+        element.src = cacheBustedUrl.toString();
       });
     };
 
@@ -52,6 +61,7 @@ export const useLoadWithRetry = (config = {}) => {
   return {
     isLoaded,
     hasError,
+    loadedUrl,
     loadWithRetry,
   };
 };

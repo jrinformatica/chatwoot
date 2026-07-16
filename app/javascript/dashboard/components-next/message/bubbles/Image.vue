@@ -20,7 +20,7 @@ const attachment = computed(() => {
   return attachments.value[0];
 });
 
-const { isLoaded, hasError, loadWithRetry } = useLoadWithRetry();
+const { isLoaded, hasError, loadedUrl, loadWithRetry } = useLoadWithRetry();
 
 const showGallery = ref(false);
 const isDownloading = ref(false);
@@ -63,7 +63,7 @@ const handleImageError = () => {
     <div v-else-if="isLoaded" class="relative group rounded-lg overflow-hidden">
       <img
         class="skip-context-menu"
-        :src="attachment.dataUrl"
+        :src="loadedUrl"
         :width="attachment.width"
         :height="attachment.height"
       />

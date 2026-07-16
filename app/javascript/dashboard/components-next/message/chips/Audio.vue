@@ -12,10 +12,14 @@ import { downloadFile } from '@chatwoot/utils';
 import { useEmitter } from 'dashboard/composables/emitter';
 import { emitter } from 'shared/helpers/mitt';
 
-const { attachment } = defineProps({
+const { attachment, sourceUrl } = defineProps({
   attachment: {
     type: Object,
     required: true,
+  },
+  sourceUrl: {
+    type: String,
+    default: '',
   },
   showTranscribedText: {
     type: Boolean,
@@ -28,7 +32,7 @@ defineOptions({
 });
 
 const timeStampURL = computed(() => {
-  return timeStampAppendedURL(attachment.dataUrl);
+  return sourceUrl || timeStampAppendedURL(attachment.dataUrl);
 });
 
 const TRANSCRIPT_PREVIEW_LENGTH = 200;
