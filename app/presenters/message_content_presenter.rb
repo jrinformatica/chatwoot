@@ -1,17 +1,24 @@
 class MessageContentPresenter < SimpleDelegator
   def outgoing_content
     Messages::MarkdownRendererService.new(
-      content_with_survey_link,
+      content_with_sender_name,
       conversation.inbox.channel_type,
       conversation.inbox.channel
     ).render
   end
 
   def webhook_content
-    Messages::WebhookContentNormalizer.normalize(content_with_survey_link)
+    Messages::WebhookContentNormalizer.normalize(content_with_sender_name)
   end
 
   private
+
+  def content_with_sender_name
+    message_content = content_with_survey_link
+    return message_content unless outgoing? && !private? && sender.is_a?(User) && message_content.present?
+
+    "**#{sender.name}**:\n#{message_content}"
+  end
 
   def content_with_survey_link
     if should_append_survey_link?
