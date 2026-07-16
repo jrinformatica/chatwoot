@@ -19,6 +19,13 @@
 - **rbenv setup**: Before running any `bundle` or `rspec` commands, init rbenv in your shell (`eval "$(rbenv init -)"`) so the correct Ruby/Bundler versions are used
 - Always prefer `bundle exec` for Ruby CLI tasks (rspec, rake, rubocop, etc.)
 
+## Production Docker Safety
+
+- **Critical**: The containers defined in the root `docker-compose.yaml` are running production workloads.
+- Never use those containers or their services, databases, queues, caches, or volumes for development, tests, linting, seeds, migrations, or debugging.
+- Never stop, restart, recreate, remove, or otherwise mutate those containers or volumes. Do not run `docker compose` commands against the production compose project.
+- Run all development and validation in an isolated worktree-native environment or in dedicated ephemeral infrastructure that cannot connect to production resources.
+
 ## Code Style
 
 - **Ruby**: Follow RuboCop rules (150 character max line length)
